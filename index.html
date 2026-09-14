@@ -1,12 +1,401 @@
 <!doctype html>
 <html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pixel Loom · 像素动画编辑器</title>
 <style>
-:root{--bg:#11131a;--panel:#191c26;--line:#303545;--text:#edf1ff;--muted:#8d95ad;--accent:#77e1ba;--pink:#ff7aa8}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% 0,#252a3e,#11131a 42%);color:var(--text);font:14px Inter,system-ui,sans-serif}button,input{font:inherit}button{border:1px solid var(--line);background:#202433;color:var(--text);padding:8px 11px;border-radius:8px;cursor:pointer}button:hover{border-color:var(--accent);color:var(--accent)}.app{max-width:1400px;margin:auto;padding:24px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}.brand{display:flex;gap:12px;align-items:center}.mark{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),#6a8cff);border-radius:10px;display:grid;place-items:center;color:#10151a;font-weight:800}.brand h1{font-size:20px;margin:0}.brand small{color:var(--muted)}.actions{display:flex;gap:8px}.primary{background:var(--accent);color:#10231e;border-color:var(--accent);font-weight:700}.workspace{display:grid;grid-template-columns:230px minmax(450px,1fr) 250px;gap:16px}.panel{background:rgba(25,28,38,.94);border:1px solid var(--line);border-radius:14px;padding:15px}.panel h3{margin:0 0 14px;font-size:12px;text-transform:uppercase;letter-spacing:.13em;color:var(--muted)}.toolgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.tool.active{border-color:var(--pink);color:var(--pink);background:#302333}.swatches{display:flex;flex-wrap:wrap;gap:9px}.sw{width:26px;height:26px;border-radius:7px;border:2px solid transparent;cursor:pointer}.sw.sel{border-color:white;box-shadow:0 0 0 2px var(--accent)}.range{width:100%;accent-color:var(--accent)}.center{display:flex;flex-direction:column;gap:12px;min-width:0}.canvasbox{background:#0c0e14;border:1px solid var(--line);border-radius:14px;padding:30px;display:grid;place-items:center;min-height:510px;position:relative}.canvaswrap{position:relative;image-rendering:pixelated;box-shadow:0 0 0 1px #3a4053,0 18px 60px #0008}.canvaswrap:before{content:"";position:absolute;inset:0;background-image:linear-gradient(#ffffff11 1px,transparent 1px),linear-gradient(90deg,#ffffff11 1px,transparent 1px);background-size:calc(100% / 16) calc(100% / 16);pointer-events:none}.canvas{display:block;image-rendering:pixelated;background:#252a3a}.onion{position:absolute;inset:0;opacity:.23;pointer-events:none}.timeline{display:flex;align-items:center;gap:9px;overflow:auto;padding:4px}.frames{display:flex;gap:8px;overflow:auto}.frame{min-width:70px;height:70px;background:#10131c;border:1px solid var(--line);border-radius:9px;padding:5px;cursor:pointer}.frame.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}.frame canvas{width:100%;height:100%;image-rendering:pixelated}.layer{display:flex;justify-content:space-between;align-items:center;padding:10px;border:1px solid transparent;border-radius:8px;cursor:pointer}.layer.active{background:#252a39;border-color:var(--accent)}.layer span{color:var(--muted);font-size:12px}.field{display:flex;justify-content:space-between;align-items:center;color:var(--muted);margin:11px 0}.field input[type=text],.field select{width:120px;background:#10131b;border:1px solid var(--line);color:var(--text);padding:7px;border-radius:7px}.hint{color:var(--muted);font-size:12px;line-height:1.5}.status{font-size:12px;color:var(--accent);min-height:18px}.kbd{border:1px solid var(--line);padding:2px 6px;border-radius:5px;color:var(--muted)}@media(max-width:1000px){.workspace{grid-template-columns:190px 1fr}.right{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:16px}}@media(max-width:700px){.app{padding:14px}.workspace{grid-template-columns:1fr}.left,.right{display:block}.canvasbox{min-height:360px;padding:15px}.actions button span{display:none}}
-</style></head><body><main class="app"><header class="top"><div class="brand"><div class="mark">P</div><div><h1>Pixel Loom</h1><small>帧动画工作台 · 本地项目</small></div></div><div class="actions"><button id="undo">↶ 撤销</button><button id="redo">↷ 重做</button><button id="save" class="primary">保存项目</button><button id="export">导出 PNG</button></div></header>
+:root{--bg:#11131a;--panel:#191c26;--line:#303545;--text:#edf1ff;--muted:#8d95ad;--accent:#77e1ba;--pink:#ff7aa8}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% 0,#252a3e,#11131a 42%);color:var(--text);font:14px Inter,system-ui,sans-serif}button,input{font:inherit}button{border:1px solid var(--line);background:#202433;color:var(--text);padding:8px 11px;border-radius:8px;cursor:pointer}button:hover{border-color:var(--accent);color:var(--accent)}button:disabled{opacity:.5;cursor:default}.app{max-width:1400px;margin:auto;padding:24px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}.brand{display:flex;gap:12px;align-items:center}.mark{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),#6a8cff);border-radius:10px;display:grid;place-items:center;color:#10151a;font-weight:800}.brand h1{font-size:20px;margin:0}.brand small{color:var(--muted)}.actions{display:flex;gap:8px}.primary{background:var(--accent);color:#10231e;border-color:var(--accent);font-weight:700}.workspace{display:grid;grid-template-columns:230px minmax(450px,1fr) 250px;gap:16px}.panel{background:rgba(25,28,38,.94);border:1px solid var(--line);border-radius:14px;padding:15px}.panel h3{margin:0 0 14px;font-size:12px;text-transform:uppercase;letter-spacing:.13em;color:var(--muted)}.toolgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.tool.active{border-color:var(--pink);color:var(--pink);background:#302333}.swatches{display:flex;flex-wrap:wrap;gap:9px}.sw{width:26px;height:26px;border-radius:7px;border:2px solid transparent;cursor:pointer}.sw.sel{border-color:white;box-shadow:0 0 0 2px var(--accent)}.range{width:100%;accent-color:var(--accent)}.center{display:flex;flex-direction:column;gap:12px;min-width:0}.canvasbox{background:#0c0e14;border:1px solid var(--line);border-radius:14px;padding:30px;display:grid;place-items:center;min-height:510px;position:relative}.canvaswrap{position:relative;image-rendering:pixelated;box-shadow:0 0 0 1px #3a4053,0 18px 60px #0008}.canvaswrap:before{content:"";position:absolute;inset:0;background-image:linear-gradient(#ffffff11 1px,transparent 1px),linear-gradient(90deg,#ffffff11 1px,transparent 1px);background-size:calc(100% / 16) calc(100% / 16);pointer-events:none}.canvaswrap.nogrid:before{display:none}.canvas{display:block;image-rendering:pixelated;background:#252a3a}.onion{position:absolute;inset:0;opacity:.23;pointer-events:none}.timeline{display:flex;align-items:center;gap:9px;overflow:auto;padding:4px}.frames{display:flex;gap:8px;overflow:auto}.frame{min-width:70px;height:70px;background:#10131c;border:1px solid var(--line);border-radius:9px;padding:5px;cursor:pointer}.frame.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}.frame canvas{width:100%;height:100%;image-rendering:pixelated}.layer{display:flex;justify-content:space-between;align-items:center;padding:10px;border:1px solid transparent;border-radius:8px;cursor:pointer}.layer.active{background:#252a39;border-color:var(--accent)}.layer span{color:var(--muted);font-size:12px}.field{display:flex;justify-content:space-between;align-items:center;color:var(--muted);margin:11px 0}.field input[type=text],.field select{width:120px;background:#10131b;border:1px solid var(--line);color:var(--text);padding:7px;border-radius:7px}.hint{color:var(--muted);font-size:12px;line-height:1.5}.status{font-size:12px;color:var(--accent);min-height:18px}.kbd{border:1px solid var(--line);padding:2px 6px;border-radius:5px;color:var(--muted)}
+/* ===== 多轨音频 ===== */
+.audio-panel{margin-top:16px;overflow:hidden}.au-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}.chk{display:flex;gap:5px;align-items:center;color:var(--muted);font-size:12px;white-space:nowrap}.au-loopinfo{color:var(--accent);font-size:12px;min-width:0}#relinkList{display:flex;flex-wrap:wrap;gap:8px}.relink{display:flex;gap:6px;align-items:center;border:1px dashed var(--pink);color:var(--pink);padding:5px 8px;border-radius:8px;font-size:12px}.relink button{padding:3px 8px;font-size:12px}.au-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:#0c0e14;max-width:100%}.au-inner{position:relative}.au-ruler{position:relative;height:46px;border-bottom:1px solid var(--line)}#auTicks{display:block}.au-loopband{position:absolute;top:0;left:0;right:0;height:12px;cursor:crosshair;z-index:3;background:#ffffff07}.au-loopband:hover{background:#77e1ba18}.au-loopregion{position:absolute;top:0;bottom:0;background:rgba(119,225,186,.10);border-left:1px solid var(--accent);border-right:1px solid var(--accent);pointer-events:none;z-index:2;display:none}.au-playhead{position:absolute;top:0;bottom:0;left:0;width:2px;margin-left:-1px;background:var(--pink);pointer-events:none;z-index:6}.au-lanes{position:relative}.au-empty{padding:18px;color:var(--muted);font-size:12px}.au-lane{position:relative;height:52px;border-bottom:1px solid #232838}.au-lanelabel{position:sticky;left:4px;display:inline-flex;gap:6px;align-items:center;background:#141824;color:var(--muted);font-size:11px;padding:2px 6px;border-radius:6px;margin:2px 0 0 2px;z-index:5;max-width:140px;overflow:hidden;white-space:nowrap}.au-trackdel{padding:0 5px;font-size:11px;line-height:1.4;border-radius:5px}.clip{position:absolute;top:14px;height:34px;background:#26314a;border:1px solid #3d4a6b;border-radius:6px;overflow:hidden;cursor:grab;touch-action:none}.clip.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}.clip.muted{opacity:.45}.clip.unlinked{background:repeating-linear-gradient(45deg,#2a2333,#2a2333 6px,#33283a 6px,#33283a 12px);border-style:dashed}.clipname{position:absolute;top:1px;left:5px;right:12px;font-size:10px;color:#cdd6f4;white-space:nowrap;overflow:hidden;pointer-events:none;z-index:1}.clipwave{position:absolute;inset:0;width:100%;height:100%}.handle{position:absolute;top:0;bottom:0;width:7px;cursor:ew-resize;z-index:2}.handle-l{left:0}.handle-r{right:0}.handle:hover{background:#77e1ba55}.marker{position:absolute;top:28px;width:13px;height:15px;transform:translateX(-50%);cursor:grab;z-index:4}.marker:before{content:"";position:absolute;inset:0;background:var(--pink);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}.marker.sel:before{background:var(--accent)}.au-inspector{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:10px;font-size:12px;color:var(--muted);min-height:30px}#inspBody{display:none;flex-wrap:wrap;gap:10px;align-items:center}#inspBody.on{display:flex}.au-inspector input[type=range]{width:100px;accent-color:var(--accent)}.au-inspector input[type=number]{width:58px;background:#10131b;border:1px solid var(--line);color:var(--text);padding:4px;border-radius:6px}
+@media(max-width:1000px){.workspace{grid-template-columns:190px 1fr}.right{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:16px}}@media(max-width:700px){.app{padding:14px}.workspace{grid-template-columns:1fr}.left,.right{display:block}.canvasbox{min-height:360px;padding:15px}.actions button span{display:none}.au-head{gap:6px}.au-head button{padding:6px 8px;font-size:12px}.au-inspector,#inspBody{gap:7px;font-size:11px}#clipName{flex-basis:100%}}
+</style></head><body><main class="app"><header class="top"><div class="brand"><div class="mark">P</div><div><h1>Pixel Loom</h1><small>帧动画工作台 · 本地项目</small></div></div><div class="actions"><button id="undo">↶ 撤销</button><button id="redo">↷ 重做</button><button id="save" class="primary">保存项目</button><button id="export">导出 <span>PNG</span></button></div></header>
 <section class="workspace"><aside class="panel left"><h3>工具</h3><div class="toolgrid"><button class="tool active" data-tool="pencil">✦ 画笔</button><button class="tool" data-tool="eraser">⌫ 橡皮</button><button class="tool" data-tool="fill">◩ 填充</button><button class="tool" data-tool="picker">◉ 取色</button></div><h3 style="margin-top:25px">颜色</h3><div class="swatches" id="swatches"></div><input id="custom" type="color" value="#ff7aa8" style="width:100%;height:36px;margin-top:12px;background:#10131b;border:1px solid var(--line);border-radius:8px"><h3 style="margin-top:25px">画布</h3><div class="field"><label>缩放</label><input id="zoom" class="range" type="range" min="8" max="28" value="20"></div><div class="field"><label>网格</label><input id="grid" type="checkbox" checked></div><p class="hint">点击像素绘制，按住拖动连续涂色。支持 ⌘/Ctrl + Z。</p></aside>
 <section class="center"><div class="canvasbox"><div class="canvaswrap" id="canvaswrap"><canvas id="onion" class="onion" width="320" height="320"></canvas><canvas id="canvas" class="canvas" width="320" height="320"></canvas></div></div><div class="panel timeline"><button id="addFrame" class="primary">＋ 新建帧</button><button id="duplicate">复制</button><div class="frames" id="frames"></div><label style="margin-left:auto;color:var(--muted);white-space:nowrap">FPS <input id="fps" type="number" min="1" max="24" value="8" style="width:45px;background:#10131b;border:1px solid var(--line);color:white;padding:5px;border-radius:6px"></label></div><div class="status" id="status"></div></section>
-<aside class="panel right"><h3>图层</h3><div id="layers"><div class="layer active"><b>主图层</b><span>可见</span></div><div class="layer"><b>阴影</b><span>可见</span></div></div><button id="addLayer" style="width:100%;margin-top:10px">＋ 添加图层</button><h3 style="margin-top:25px">洋葱皮</h3><div class="field"><label>显示前一帧</label><input id="onionToggle" type="checkbox"></div><div class="field"><label>透明度</label><input id="opacity" class="range" type="range" min="5" max="60" value="23"></div><h3 style="margin-top:25px">播放预览</h3><button id="play" class="primary" style="width:100%">▶ 播放动画</button><p class="hint" style="margin-top:10px">项目会自动保存至浏览器本地存储。</p></aside></section></main>
+<aside class="panel right"><h3>图层</h3><div id="layers"><div class="layer active"><b>主图层</b><span>可见</span></div><div class="layer"><b>阴影</b><span>可见</span></div></div><button id="addLayer" style="width:100%;margin-top:10px">＋ 添加图层</button><h3 style="margin-top:25px">洋葱皮</h3><div class="field"><label>显示前一帧</label><input id="onionToggle" type="checkbox"></div><div class="field"><label>透明度</label><input id="opacity" class="range" type="range" min="5" max="60" value="23"></div><h3 style="margin-top:25px">播放预览</h3><button id="play" class="primary" style="width:100%">▶ 播放动画</button><p class="hint" style="margin-top:10px">项目会自动保存至浏览器本地存储。</p></aside></section>
+<section class="panel audio-panel" id="audioPanel"><h3>多轨音频</h3>
+<div class="au-head"><button id="importBtn" class="primary">＋ 导入音频</button><input id="importAudio" type="file" accept="audio/*" multiple hidden><button id="addTrack">＋ 音轨</button><button id="addMarker">◆ 添加节拍</button><button id="delMarker">✕ 删除节拍</button><label class="chk"><input id="snapToggle" type="checkbox" checked> 吸附</label><label class="chk"><input id="mutePreview" type="checkbox"> 静音预览</label><label class="chk"><input id="loopToggle" type="checkbox"> 循环</label><span class="au-loopinfo" id="loopInfo"></span><button id="exportWebm">⬇ 导出 WebM</button></div>
+<div id="relinkList"></div>
+<div class="au-scroll" id="auScroll"><div class="au-inner" id="auInner"><div class="au-loopregion" id="auLoopRegion"></div><div class="au-playhead" id="auPlayhead"></div><div class="au-ruler" id="auRuler"><canvas id="auTicks"></canvas><div class="au-loopband" id="auLoopBand" title="按住拖动设置循环区间"></div></div><div class="au-lanes" id="auLanes"></div></div></div>
+<div class="au-inspector"><span id="inspEmpty">未选中片段 · 点击片段后可调节音量、静音、淡入淡出、复制或删除</span><div id="inspBody"><b id="clipName" style="color:var(--text)"></b><label>音量 <input id="clipVol" type="range" min="0" max="1" step="0.01"> <span id="volVal"></span></label><label class="chk"><input id="clipMute" type="checkbox"> 静音</label><label>淡入 <input id="clipFadeIn" type="number" min="0" max="30" step="0.05"> s</label><label>淡出 <input id="clipFadeOut" type="number" min="0" max="30" step="0.05"> s</label><button id="clipCopy">⧉ 复制</button><button id="clipDel">✕ 删除</button></div></div>
+<p class="hint">双击标尺添加节拍标记；在顶部循环带拖动设置循环区间；拖动片段移动（可跨轨），拖动两端裁剪；开启「吸附」后片段与播放头会对齐到节拍标记和帧网格。</p></section></main>
 <script>
-const N=16, colors=['#ff7aa8','#77e1ba','#ffd166','#6a8cff','#b18cff','#ffffff','#11131a','#f97316'];let frames=[Array(N*N).fill('')],current=0,history=[],future=[],tool='pencil',color=colors[0],drawing=false;
-const c=document.querySelector('#canvas'),ctx=c.getContext('2d'),oc=document.querySelector('#onion'),octx=oc.getContext('2d');function snap(){return frames.map(f=>f.slice())}function push(){history.push(snap());if(history.length>30)history.shift();future=[]}function draw(){ctx.clearRect(0,0,320,320);ctx.fillStyle='#202433';ctx.fillRect(0,0,320,320);let s=20;frames[current].forEach((v,i)=>{if(v){ctx.fillStyle=v;ctx.fillRect(i%N*s,Math.floor(i/N)*s,s,s)}});octx.clearRect(0,0,320,320);if(document.querySelector('#onionToggle').checked&&current>0){frames[current-1].forEach((v,i)=>{if(v){octx.fillStyle=v;octx.fillRect(i%N*s,Math.floor(i/N)*s,s,s)}})}renderFrames()}function renderFrames(){let el=document.querySelector('#frames');el.innerHTML='';frames.forEach((f,i)=>{let b=document.createElement('div');b.className='frame '+(i===current?'active':'');let x=document.createElement('canvas');x.width=x.height=N;let q=x.getContext('2d');q.fillStyle='#202433';q.fillRect(0,0,N,N);f.forEach((v,j)=>{if(v){q.fillStyle=v;q.fillRect(j%N,Math.floor(j/N),1,1)}});b.append(x);b.onclick=()=>{current=i;draw()};el.append(b)})}function setPixel(e){let r=c.getBoundingClientRect(),x=Math.floor((e.clientX-r.left)/r.width*N),y=Math.floor((e.clientY-r.top)/r.height*N),i=y*N+x;if(x<0||x>=N||y<0||y>=N)return;if(tool==='picker'){if(frames[current][i]){color=frames[current][i];document.querySelector('#custom').value=color}return}if(!drawing)push();frames[current][i]=tool==='eraser'?'':color;draw()}c.addEventListener('pointerdown',e=>{drawing=true;setPixel(e)});c.addEventListener('pointermove',e=>{if(drawing)setPixel(e)});window.addEventListener('pointerup',()=>drawing=false);document.querySelectorAll('.tool').forEach(b=>b.onclick=()=>{tool=b.dataset.tool;document.querySelectorAll('.tool').forEach(x=>x.classList.remove('active'));b.classList.add('active')});document.querySelector('#swatches').innerHTML=colors.map(x=>`<button class="sw" style="background:${x}" data-c="${x}"></button>`).join('');document.querySelectorAll('.sw').forEach(b=>b.onclick=()=>{color=b.dataset.c;document.querySelector('#custom').value=color});document.querySelector('#custom').oninput=e=>color=e.target.value;document.querySelector('#zoom').oninput=e=>{c.style.width=c.style.height=e.target.value*16+'px';oc.style.width=oc.style.height=e.target.value*16+'px';document.querySelector('#canvaswrap').style.width=document.querySelector('#canvaswrap').style.height=e.target.value*16+'px'};document.querySelector('#grid').onchange=e=>document.querySelector('#canvaswrap').classList.toggle('nogrid',!e.target.checked);document.querySelector('#opacity').oninput=e=>oc.style.opacity=e.target.value/100;document.querySelector('#onionToggle').onchange=draw;document.querySelector('#addFrame').onclick=()=>{push();frames.push(Array(N*N).fill(''));current=frames.length-1;draw()};document.querySelector('#duplicate').onclick=()=>{push();frames.splice(current+1,0,frames[current].slice());current++;draw()};document.querySelector('#addLayer').onclick=()=>{let n=document.querySelectorAll('.layer').length+1,d=document.createElement('div');d.className='layer';d.innerHTML=`<b>图层 ${n}</b><span>可见</span>`;document.querySelector('#layers').append(d)};document.querySelector('#undo').onclick=()=>{if(history.length){future.push(snap());frames=history.pop();current=Math.min(current,frames.length-1);draw()}};document.querySelector('#redo').onclick=()=>{if(future.length){history.push(snap());frames=future.pop();draw()}};document.querySelector('#save').onclick=()=>{localStorage.pixelLoom=JSON.stringify({frames,fps:document.querySelector('#fps').value});document.querySelector('#status').textContent='已保存到本地 · '+new Date().toLocaleTimeString()};document.querySelector('#export').onclick=()=>{let a=document.createElement('a');a.download='pixel-loom-frame.png';a.href=c.toDataURL('image/png');a.click();document.querySelector('#status').textContent='已导出当前帧 PNG'};document.querySelector('#play').onclick=()=>{let i=0;document.querySelector('#play').textContent='■ 停止预览';let t=setInterval(()=>{current=i++%frames.length;draw()},1000/(+document.querySelector('#fps').value||8));document.querySelector('#play').onclick=()=>{clearInterval(t);document.querySelector('#play').textContent='▶ 播放动画'}};if(localStorage.pixelLoom){try{let d=JSON.parse(localStorage.pixelLoom);frames=d.frames||frames;document.querySelector('#fps').value=d.fps||8}catch(e){}}document.querySelector('#zoom').dispatchEvent(new Event('input'));draw();
+'use strict';
+/* ================= 像素画布核心 ================= */
+const N=16,colors=['#ff7aa8','#77e1ba','#ffd166','#6a8cff','#b18cff','#ffffff','#11131a','#f97316'];
+let frames=[Array(N*N).fill('')],current=0,tool='pencil',color=colors[0],drawing=false;
+const c=document.querySelector('#canvas'),ctx=c.getContext('2d'),oc=document.querySelector('#onion'),octx=oc.getContext('2d');
+const $=s=>document.querySelector(s);
+const getFps=()=>Math.min(24,Math.max(1,+$('#fps').value||8));
+function draw(){ctx.clearRect(0,0,320,320);ctx.fillStyle='#202433';ctx.fillRect(0,0,320,320);let s=20;frames[current].forEach((v,i)=>{if(v){ctx.fillStyle=v;ctx.fillRect(i%N*s,Math.floor(i/N)*s,s,s)}});octx.clearRect(0,0,320,320);if($('#onionToggle').checked&&current>0){frames[current-1].forEach((v,i)=>{if(v){octx.fillStyle=v;octx.fillRect(i%N*s,Math.floor(i/N)*s,s,s)}})}renderFrames()}
+function renderFrames(){let el=$('#frames');el.innerHTML='';frames.forEach((f,i)=>{let b=document.createElement('div');b.className='frame '+(i===current?'active':'');let x=document.createElement('canvas');x.width=x.height=N;let q=x.getContext('2d');q.fillStyle='#202433';q.fillRect(0,0,N,N);f.forEach((v,j)=>{if(v){q.fillStyle=v;q.fillRect(j%N,Math.floor(j/N),1,1)}});b.append(x);b.onclick=()=>{current=i;playheadT=i/getFps();positionPlayhead(playheadT);draw()};el.append(b)})}
+function setPixel(e){let r=c.getBoundingClientRect(),x=Math.floor((e.clientX-r.left)/r.width*N),y=Math.floor((e.clientY-r.top)/r.height*N),i=y*N+x;if(x<0||x>=N||y<0||y>=N)return;if(tool==='picker'){if(frames[current][i]){color=frames[current][i];$('#custom').value=color}return}if(!drawing)pushHistory();frames[current][i]=tool==='eraser'?'':color;draw()}
+c.addEventListener('pointerdown',e=>{drawing=true;setPixel(e)});
+c.addEventListener('pointermove',e=>{if(drawing)setPixel(e)});
+window.addEventListener('pointerup',()=>drawing=false);
+document.querySelectorAll('.tool').forEach(b=>b.onclick=()=>{tool=b.dataset.tool;document.querySelectorAll('.tool').forEach(x=>x.classList.remove('active'));b.classList.add('active')});
+$('#swatches').innerHTML=colors.map(x=>`<button class="sw" style="background:${x}" data-c="${x}"></button>`).join('');
+document.querySelectorAll('.sw').forEach(b=>b.onclick=()=>{color=b.dataset.c;$('#custom').value=color});
+$('#custom').oninput=e=>color=e.target.value;
+$('#zoom').oninput=e=>{c.style.width=c.style.height=e.target.value*16+'px';oc.style.width=oc.style.height=e.target.value*16+'px';$('#canvaswrap').style.width=$('#canvaswrap').style.height=e.target.value*16+'px'};
+$('#grid').onchange=e=>$('#canvaswrap').classList.toggle('nogrid',!e.target.checked);
+$('#opacity').oninput=e=>oc.style.opacity=e.target.value/100;
+$('#onionToggle').onchange=draw;
+$('#addFrame').onclick=()=>{pushHistory();frames.push(Array(N*N).fill(''));current=frames.length-1;draw();renderAudio()};
+$('#duplicate').onclick=()=>{pushHistory();frames.splice(current+1,0,frames[current].slice());current++;draw();renderAudio()};
+$('#addLayer').onclick=()=>{let n=document.querySelectorAll('.layer').length+1,d=document.createElement('div');d.className='layer';d.innerHTML=`<b>图层 ${n}</b><span>可见</span>`;$('#layers').append(d)};
+$('#fps').addEventListener('input',()=>renderAudio());
+
+/* ================= 音频状态 ================= */
+const PXS=80;
+let idc=1;const nid=p=>p+(idc++)+'_'+Math.random().toString(36).slice(2,7);
+let audio={tracks:[],markers:[],loop:{on:false,start:0,end:1},snap:true,muted:false};
+let audioFiles={}; // fileId -> {name,duration,buffer,peaks,linked}
+let selectedClip=null,selectedMarker=null,playheadT=0;
+const clone=o=>JSON.parse(JSON.stringify(o));
+const maxClipEnd=()=>audio.tracks.reduce((m,t)=>t.clips.reduce((a,cl)=>Math.max(a,cl.start+cl.duration),m),0);
+const maxMarkerT=()=>audio.markers.reduce((a,m)=>Math.max(a,m.t),0);
+
+/* ================= 统一撤销重做（帧 + 音频） ================= */
+let history=[],future=[];
+const snapFrames=()=>frames.map(f=>f.slice());
+const snapshot=()=>({frames:snapFrames(),audio:clone(audio),current});
+function pushHistory(){history.push(snapshot());if(history.length>40)history.shift();future=[]}
+let capSnap=null;
+function beginCapture(){capSnap=snapshot()}
+function commitCapture(){if(!capSnap)return;if(JSON.stringify(capSnap.audio)!==JSON.stringify(audio)||JSON.stringify(capSnap.frames)!==JSON.stringify(frames)){history.push(capSnap);if(history.length>40)history.shift();future=[]}capSnap=null}
+function restore(s){frames=s.frames;audio=Object.assign({tracks:[],markers:[],loop:{on:false,start:0,end:1},snap:true,muted:false},s.audio);current=Math.min(s.current,frames.length-1);selectedClip=null;selectedMarker=null;draw();renderAudio()}
+function undo(){if(!history.length)return;stopPlayback();future.push(snapshot());restore(history.pop())}
+function redo(){if(!future.length)return;stopPlayback();history.push(snapshot());restore(future.pop())}
+$('#undo').onclick=undo;$('#redo').onclick=redo;
+window.addEventListener('keydown',e=>{const tag=(e.target.tagName||'').toLowerCase();if(tag==='input'||tag==='select'||tag==='textarea')return;const mod=e.ctrlKey||e.metaKey;
+if(mod&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo()}
+else if(mod&&e.key.toLowerCase()==='y'){e.preventDefault();redo()}
+else if(e.key==='Delete'||e.key==='Backspace'){const sel=findSelectedClip();if(sel){stopPlayback();pushHistory();sel.tr.clips=sel.tr.clips.filter(x=>x.id!==sel.cl.id);selectedClip=null;renderAudio()}}});
+
+/* ================= 吸附 ================= */
+function snapTime(t){if(!audio.snap)return t;const th=8/PXS,fd=1/getFps();let best=t,bd=th;const cands=[Math.round(t/fd)*fd];for(const m of audio.markers)cands.push(m.t);for(const x of cands){const d=Math.abs(x-t);if(d<=bd){bd=d;best=x}}return best}
+function snapClip(ns,dur){if(!audio.snap)return Math.max(0,ns);const th=8/PXS,fd=1/getFps();let best=ns,bd=th;
+for(const x of [Math.round(ns/fd)*fd,...audio.markers.map(m=>m.t)]){const d=Math.abs(x-ns);if(d<=bd){bd=d;best=x}}
+const e=ns+dur;for(const x of [Math.round(e/fd)*fd,...audio.markers.map(m=>m.t)]){const d=Math.abs(x-e);if(d<bd){bd=d;best=x-dur}}
+return best}
+
+/* ================= 音频 UI 渲染 ================= */
+const auInner=$('#auInner'),auRuler=$('#auRuler'),auTicks=$('#auTicks'),auLanes=$('#auLanes'),auPlayhead=$('#auPlayhead');
+function positionPlayhead(t){auPlayhead.style.transform='translateX('+(t*PXS)+'px)'}
+function renderLoopRegion(){const r=$('#auLoopRegion'),info=$('#loopInfo');
+if(audio.loop.on&&audio.loop.end>audio.loop.start){r.style.display='block';r.style.left=(audio.loop.start*PXS)+'px';r.style.width=((audio.loop.end-audio.loop.start)*PXS)+'px';info.textContent='循环 '+audio.loop.start.toFixed(2)+'–'+audio.loop.end.toFixed(2)+'s'}
+else{r.style.display='none';info.textContent=audio.loop.end>audio.loop.start?'循环已关 ('+audio.loop.start.toFixed(2)+'–'+audio.loop.end.toFixed(2)+'s)':''}}
+function syncAudioControls(){$('#snapToggle').checked=!!audio.snap;$('#mutePreview').checked=!!audio.muted;$('#loopToggle').checked=!!(audio.loop&&audio.loop.on)}
+function renderAudio(){
+syncAudioControls();
+const fps=getFps(),animDur=frames.length/fps;
+const end=Math.max(animDur,maxClipEnd(),maxMarkerT(),audio.loop.end,0.5)+0.5;
+const W=Math.max($('#auScroll').clientWidth-2,Math.ceil(end*PXS));
+auInner.style.width=W+'px';
+auTicks.width=W;auTicks.height=46;
+const g=auTicks.getContext('2d');g.clearRect(0,0,W,46);g.strokeStyle='#2a3040';g.fillStyle='#8d95ad';g.font='10px Inter,sans-serif';
+const fd=1/fps;
+for(let i=0;i*fd<=end+1e-6;i++){const x=Math.round(i*fd*PXS)+.5;g.beginPath();g.moveTo(x,42);g.lineTo(x,46);g.stroke()}
+for(let s=0;s<=Math.ceil(end);s++){const x=Math.round(s*PXS)+.5;g.beginPath();g.moveTo(x,30);g.lineTo(x,46);g.stroke();g.fillText(s+'s',x+3,24)}
+auRuler.querySelectorAll('.marker').forEach(x=>x.remove());
+for(const m of audio.markers)auRuler.appendChild(markerEl(m));
+auLanes.innerHTML='';
+if(!audio.tracks.length)auLanes.innerHTML='<div class="au-empty">尚未导入音频 — 点击「＋ 导入音频」添加本地文件</div>';
+for(const tr of audio.tracks)auLanes.appendChild(laneEl(tr));
+renderLoopRegion();renderInspector();renderRelink();positionPlayhead(playheadT)}
+function markerEl(m){const mk=document.createElement('div');mk.className='marker'+(m.id===selectedMarker?' sel':'');mk.style.left=(m.t*PXS)+'px';mk.title='节拍 '+m.t.toFixed(2)+'s · 拖动移动，选中后可删除';
+mk.addEventListener('pointerdown',e=>{e.stopPropagation();selectedMarker=m.id;document.querySelectorAll('.marker').forEach(x=>x.classList.toggle('sel',x===mk));
+beginCapture();let moved=false;const sx=e.clientX,ot=m.t;
+const mv=ev=>{const dx=(ev.clientX-sx)/PXS;if(Math.abs(dx)>0.02)moved=true;m.t=Math.max(0,snapTime(ot+dx));mk.style.left=(m.t*PXS)+'px'};
+const up=()=>{document.removeEventListener('pointermove',mv);document.removeEventListener('pointerup',up);if(moved){audio.markers.sort((a,b)=>a.t-b.t);commitCapture();stopPlayback()}else capSnap=null;renderAudio()};
+document.addEventListener('pointermove',mv);document.addEventListener('pointerup',up)});
+return mk}
+function laneEl(tr){const lane=document.createElement('div');lane.className='au-lane';lane.dataset.tid=tr.id;
+const lab=document.createElement('div');lab.className='au-lanelabel';const nm=document.createElement('span');nm.textContent=tr.name;lab.appendChild(nm);
+const del=document.createElement('button');del.className='au-trackdel';del.textContent='×';del.title='删除音轨';
+del.onclick=ev=>{ev.stopPropagation();stopPlayback();pushHistory();audio.tracks=audio.tracks.filter(t=>t.id!==tr.id);if(selectedClip&&selectedClip.tid===tr.id)selectedClip=null;renderAudio()};
+lab.appendChild(del);lane.appendChild(lab);
+lane.addEventListener('pointerdown',e=>{if(e.target===lane){selectedClip=null;renderInspector()}});
+for(const cl of tr.clips)lane.appendChild(clipEl(tr,cl));
+return lane}
+function clipEl(tr,cl){const f=audioFiles[cl.fileId];
+const el=document.createElement('div');
+el.className='clip'+(cl.muted?' muted':'')+((!f||!f.linked)?' unlinked':'')+((selectedClip&&selectedClip.cid===cl.id)?' sel':'');
+el.style.left=(cl.start*PXS)+'px';el.style.width=Math.max(6,cl.duration*PXS)+'px';
+const wave=document.createElement('canvas');wave.className='clipwave';el.appendChild(wave);
+const nm=document.createElement('span');nm.className='clipname';nm.textContent=(f?f.name:'音频')+((!f||!f.linked)?' · 未关联':'');el.appendChild(nm);
+const hl=document.createElement('div');hl.className='handle handle-l';el.appendChild(hl);
+const hr=document.createElement('div');hr.className='handle handle-r';el.appendChild(hr);
+requestAnimationFrame(()=>drawClipWave(wave,cl,f));
+el.addEventListener('pointerdown',e=>clipPointerDown(e,tr,cl,el));
+return el}
+function drawClipWave(cv,cl,f){const w=cv.clientWidth,h=cv.clientHeight;if(!w||!h)return;cv.width=w;cv.height=h;
+const g=cv.getContext('2d');g.clearRect(0,0,w,h);
+if(f&&f.linked&&f.peaks&&f.duration>0){const P=f.peaks,n=P.length,mid=h/2;
+const p0=cl.offset/f.duration*n,p1=(cl.offset+cl.duration)/f.duration*n;
+g.strokeStyle='#77e1ba';g.lineWidth=1;g.beginPath();
+for(let x=0;x<w;x++){const idx=Math.min(n-1,Math.max(0,Math.floor(p0+(x/w)*(p1-p0))));const a=P[idx]*(h/2-2);g.moveTo(x+.5,mid-a);g.lineTo(x+.5,mid+a+1)}
+g.stroke()}
+if(cl.fadeIn>0){const fw=Math.min(w,cl.fadeIn/cl.duration*w);const gr=g.createLinearGradient(0,0,fw,0);gr.addColorStop(0,'rgba(0,0,0,.55)');gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.fillRect(0,0,fw,h)}
+if(cl.fadeOut>0){const fw=Math.min(w,cl.fadeOut/cl.duration*w);const gr=g.createLinearGradient(w-fw,0,w,0);gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(1,'rgba(0,0,0,.55)');g.fillStyle=gr;g.fillRect(w-fw,0,fw,h)}}
+function clipPointerDown(e,tr,cl,el){if(e.button!==0)return;e.stopPropagation();
+selectedClip={tid:tr.id,cid:cl.id};
+document.querySelectorAll('.clip').forEach(x=>x.classList.toggle('sel',x===el));
+renderInspector();
+const mode=e.target.classList.contains('handle-l')?'l':e.target.classList.contains('handle-r')?'r':'move';
+const sx=e.clientX,sy=e.clientY;
+const orig={start:cl.start,offset:cl.offset,duration:cl.duration};
+let tid=tr.id,moved=false;
+beginCapture();
+const f=audioFiles[cl.fileId];
+const srcDur=(f&&f.duration)||(cl.offset+cl.duration);
+const mv=ev=>{const dx=(ev.clientX-sx)/PXS;
+if(Math.abs(ev.clientX-sx)+Math.abs(ev.clientY-sy)>3)moved=true;
+if(!moved)return;
+if(mode==='move'){
+const lanes=[...document.querySelectorAll('.au-lane')];
+const idx=lanes.findIndex(l=>{const r=l.getBoundingClientRect();return ev.clientY>=r.top&&ev.clientY<=r.bottom});
+if(idx>=0&&audio.tracks[idx]&&audio.tracks[idx].id!==tid){const fromT=audio.tracks.find(t=>t.id===tid);fromT.clips=fromT.clips.filter(x=>x.id!==cl.id);audio.tracks[idx].clips.push(cl);tid=audio.tracks[idx].id;selectedClip={tid,cid:cl.id};el.remove();lanes[idx].appendChild(el)}
+cl.start=Math.max(0,snapClip(orig.start+dx,cl.duration));
+el.style.left=(cl.start*PXS)+'px'}
+else if(mode==='l'){
+const end=orig.start+orig.duration;
+let ns=orig.start+dx;ns=Math.min(ns,end-0.05);
+let noff=orig.offset+(ns-orig.start);
+if(noff<0){noff=0;ns=orig.start-orig.offset}
+ns=snapTime(ns);noff=orig.offset+(ns-orig.start);
+if(noff<0){noff=0;ns=orig.start-orig.offset}
+let nd=end-ns;if(nd<0.05){nd=0.05;ns=end-0.05;noff=orig.offset+(ns-orig.start);if(noff<0){noff=0;ns=orig.start-orig.offset;nd=end-ns}}
+nd=Math.min(nd,srcDur-noff);
+cl.start=Math.max(0,ns);cl.offset=noff;cl.duration=nd;
+el.style.left=(cl.start*PXS)+'px';el.style.width=(nd*PXS)+'px'}
+else{
+let ne=orig.start+orig.duration+dx;
+ne=Math.min(ne,orig.start+(srcDur-orig.offset));ne=Math.max(ne,orig.start+0.05);
+ne=snapTime(ne);
+ne=Math.min(ne,orig.start+(srcDur-orig.offset));ne=Math.max(ne,orig.start+0.05);
+cl.duration=ne-orig.start;
+el.style.width=(cl.duration*PXS)+'px'}};
+const up=()=>{document.removeEventListener('pointermove',mv);document.removeEventListener('pointerup',up);if(moved){commitCapture();stopPlayback()}else capSnap=null;renderAudio()};
+document.addEventListener('pointermove',mv);document.addEventListener('pointerup',up)}
+
+/* ---- 标尺：seek / 循环区间 / 节拍标记 ---- */
+auRuler.addEventListener('pointerdown',e=>{if(e.target!==auTicks&&e.target!==auRuler)return;
+const r=auRuler.getBoundingClientRect();if(e.clientY-r.top<=12)return;
+const x=e.clientX-auInner.getBoundingClientRect().left;
+const t=Math.max(0,snapTime(x/PXS));playheadT=t;
+if(play.on)startPlayback(t);else{current=Math.min(frames.length-1,Math.floor(t*getFps()));draw();positionPlayhead(t)}});
+auRuler.addEventListener('dblclick',e=>{if(e.target!==auTicks&&e.target!==auRuler)return;
+const x=e.clientX-auInner.getBoundingClientRect().left;
+stopPlayback();pushHistory();
+audio.markers.push({id:nid('m'),t:Math.max(0,x/PXS)});audio.markers.sort((a,b)=>a.t-b.t);renderAudio()});
+$('#auLoopBand').addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();
+const x0=Math.max(0,(e.clientX-auInner.getBoundingClientRect().left)/PXS);
+beginCapture();let moved=false;
+const mv=ev=>{const x1=Math.max(0,(ev.clientX-auInner.getBoundingClientRect().left)/PXS);
+if(Math.abs(x1-x0)>0.02)moved=true;
+let a=snapTime(Math.min(x0,x1)),b=snapTime(Math.max(x0,x1));
+if(b-a<0.05)b=a+0.05;
+audio.loop.start=a;audio.loop.end=b;audio.loop.on=true;$('#loopToggle').checked=true;renderLoopRegion()};
+const up=()=>{document.removeEventListener('pointermove',mv);document.removeEventListener('pointerup',up);if(moved)commitCapture();else capSnap=null;renderAudio()};
+document.addEventListener('pointermove',mv);document.addEventListener('pointerup',up)});
+$('#addMarker').onclick=()=>{stopPlayback();pushHistory();audio.markers.push({id:nid('m'),t:playheadT});audio.markers.sort((a,b)=>a.t-b.t);renderAudio()};
+$('#delMarker').onclick=()=>{if(!selectedMarker){setStatus('请先点击选择一个节拍标记');return}stopPlayback();pushHistory();audio.markers=audio.markers.filter(m=>m.id!==selectedMarker);selectedMarker=null;renderAudio()};
+$('#addTrack').onclick=()=>{stopPlayback();pushHistory();audio.tracks.push({id:nid('t'),name:'音轨 '+(audio.tracks.length+1),clips:[]});renderAudio()};
+$('#snapToggle').onchange=e=>{audio.snap=e.target.checked};
+$('#loopToggle').onchange=e=>{audio.loop.on=e.target.checked;renderLoopRegion()};
+$('#mutePreview').onchange=e=>{audio.muted=e.target.checked;if(play.master&&actx)play.master.gain.setTargetAtTime(audio.muted?0:1,actx.currentTime,0.02)};
+
+/* ---- 片段检查器 ---- */
+function findSelectedClip(){if(!selectedClip)return null;const tr=audio.tracks.find(t=>t.id===selectedClip.tid);if(!tr)return null;const cl=tr.clips.find(x=>x.id===selectedClip.cid);return cl?{tr,cl}:null}
+function renderInspector(){const body=$('#inspBody'),empty=$('#inspEmpty');const sel=findSelectedClip();
+if(!sel){body.classList.remove('on');empty.style.display='';return}
+empty.style.display='none';body.classList.add('on');
+const cl=sel.cl,f=audioFiles[cl.fileId];
+$('#clipName').textContent=(f?f.name:'音频')+' · '+cl.duration.toFixed(2)+'s @ '+cl.start.toFixed(2)+'s'+((!f||!f.linked)?' · 未关联':'');
+$('#clipVol').value=cl.volume;$('#volVal').textContent=Math.round(cl.volume*100)+'%';
+$('#clipMute').checked=cl.muted;$('#clipFadeIn').value=cl.fadeIn;$('#clipFadeOut').value=cl.fadeOut}
+const volEl=$('#clipVol');
+volEl.addEventListener('pointerdown',beginCapture);volEl.addEventListener('focus',beginCapture);
+volEl.addEventListener('input',()=>{const sel=findSelectedClip();if(!sel)return;sel.cl.volume=+volEl.value;$('#volVal').textContent=Math.round(sel.cl.volume*100)+'%'});
+volEl.addEventListener('change',()=>{commitCapture();renderAudio()});
+$('#clipMute').addEventListener('change',e=>{const sel=findSelectedClip();if(!sel)return;pushHistory();sel.cl.muted=e.target.checked;renderAudio()});
+for(const[id,key]of[['#clipFadeIn','fadeIn'],['#clipFadeOut','fadeOut']]){const el=$(id);
+el.addEventListener('focus',beginCapture);
+el.addEventListener('change',()=>{const sel=findSelectedClip();if(!sel){capSnap=null;return}sel.cl[key]=Math.max(0,Math.min(sel.cl.duration,+el.value||0));commitCapture();renderAudio()})}
+$('#clipCopy').onclick=()=>{const sel=findSelectedClip();if(!sel)return;stopPlayback();pushHistory();
+const nc=clone(sel.cl);nc.id=nid('c');nc.start=sel.cl.start+sel.cl.duration;sel.tr.clips.push(nc);
+selectedClip={tid:sel.tr.id,cid:nc.id};renderAudio()};
+$('#clipDel').onclick=()=>{const sel=findSelectedClip();if(!sel)return;stopPlayback();pushHistory();
+sel.tr.clips=sel.tr.clips.filter(x=>x.id!==sel.cl.id);selectedClip=null;renderAudio()};
+
+/* ================= 音频文件：导入 / 重新关联 ================= */
+let actx=null;
+function ensureCtx(){if(!actx){const AC=window.AudioContext||window.webkitAudioContext;actx=new AC()}if(actx.state==='suspended')actx.resume();return actx}
+async function decodeFile(file){const ab=await file.arrayBuffer();return await ensureCtx().decodeAudioData(ab.slice(0))}
+function computePeaks(buf,n){n=n||800;const out=new Float32Array(n);const len=buf.length;if(!len)return out;
+const chs=[];for(let ch=0;ch<buf.numberOfChannels;ch++)chs.push(buf.getChannelData(ch));
+for(let i=0;i<n;i++){const a=Math.floor(i/n*len),b=Math.max(a+1,Math.floor((i+1)/n*len));let m=0;const step=Math.max(1,Math.floor((b-a)/64));
+for(const d of chs)for(let j=a;j<b;j+=step){const v=Math.abs(d[j]);if(v>m)m=v}out[i]=m}return out}
+$('#importBtn').onclick=()=>$('#importAudio').click();
+$('#importAudio').addEventListener('change',async e=>{const files=[...e.target.files];e.target.value='';if(!files.length)return;stopPlayback();
+for(const file of files){let buf;
+try{buf=await decodeFile(file)}catch(err){setStatus('无法解码音频「'+file.name+'」：文件可能已损坏或格式不受支持');continue}
+const fid=nid('f');
+audioFiles[fid]={name:file.name,duration:buf.duration,buffer:buf,peaks:computePeaks(buf),linked:true};
+pushHistory();
+audio.tracks.push({id:nid('t'),name:file.name,clips:[{id:nid('c'),fileId:fid,start:0,offset:0,duration:buf.duration,volume:1,muted:false,fadeIn:0,fadeOut:0}]});
+setStatus('已导入「'+file.name+'」· '+buf.duration.toFixed(2)+'s')}
+renderAudio()});
+function renderRelink(){const box=$('#relinkList');box.innerHTML='';
+const referenced=new Set(audio.tracks.flatMap(t=>t.clips.map(cl=>cl.fileId)));
+for(const fid of referenced){const f=audioFiles[fid];if(!f||f.linked)continue;
+const chip=document.createElement('div');chip.className='relink';
+const sp=document.createElement('span');sp.textContent='⚠ '+f.name+' 未关联';
+const btn=document.createElement('button');btn.textContent='重新关联';
+const inp=document.createElement('input');inp.type='file';inp.accept='audio/*';inp.hidden=true;inp.className='relink-input';inp.dataset.fid=fid;
+btn.onclick=()=>inp.click();
+inp.onchange=async()=>{if(!inp.files.length)return;
+try{const buf=await decodeFile(inp.files[0]);
+f.buffer=buf;f.peaks=computePeaks(buf);f.linked=true;
+setStatus(Math.abs(buf.duration-f.duration)>0.05?'已关联「'+f.name+'」，但时长与原始文件不一致':'已重新关联「'+f.name+'」');
+f.duration=buf.duration}catch(err){setStatus('无法解码音频「'+inp.files[0].name+'」：文件可能已损坏或格式不受支持')}
+renderAudio()};
+chip.append(sp,btn,inp);box.appendChild(chip)}}
+
+/* ================= 播放引擎（音画同步） ================= */
+const play={on:false,master:null,sources:[],t0:0,from:0,to:0,raf:0,loops:0};
+function clipEnv(cl,tau){let v=cl.volume;
+if(cl.fadeIn>0&&tau<cl.fadeIn)v*=Math.max(0,tau/cl.fadeIn);
+if(cl.fadeOut>0&&tau>cl.duration-cl.fadeOut)v*=Math.max(0,(cl.duration-tau)/cl.fadeOut);
+return v}
+function scheduleInto(ac,dest,from,to,t0,sources){
+for(const tr of audio.tracks)for(const cl of tr.clips){
+const f=audioFiles[cl.fileId];
+if(!f||!f.linked||!f.buffer)continue;
+if(cl.muted||cl.volume<=0||cl.duration<=0)continue;
+const bufDur=f.buffer.duration;
+const cs=cl.start,ce=cl.start+cl.duration;
+const os=Math.max(from,cs);let oe=Math.min(to,ce);
+const off=cl.offset+(os-cs);
+if(off>=bufDur)continue;
+oe=Math.min(oe,os+(bufDur-off));
+if(oe-os<=0.005)continue;
+const src=ac.createBufferSource();src.buffer=f.buffer;
+const g=ac.createGain();
+const pts=[os];
+const fi=cs+Math.min(cl.fadeIn,cl.duration),fo=ce-Math.min(cl.fadeOut,cl.duration);
+if(fi>os+1e-4&&fi<oe-1e-4)pts.push(fi);
+if(fo>os+1e-4&&fo<oe-1e-4)pts.push(fo);
+pts.push(oe);
+const when=x=>t0+(x-from);
+g.gain.setValueAtTime(clipEnv(cl,os-cs),when(os));
+for(let i=1;i<pts.length;i++){const v=clipEnv(cl,pts[i]-cs);
+if(pts[i]-pts[i-1]<2e-4)g.gain.setValueAtTime(v,when(pts[i]));
+else g.gain.linearRampToValueAtTime(v,when(pts[i]))}
+src.connect(g);g.connect(dest);
+src.start(when(os),off,oe-os);
+sources.push(src)}}
+function stopSources(){play.sources.forEach(s=>{try{s.stop()}catch(e){}});play.sources=[]}
+function startPlayback(fromT){stopPlayback();
+const fps=getFps(),animDur=frames.length/fps;
+const total=Math.max(animDur,maxClipEnd(),audio.loop.on?audio.loop.end:0);
+if(total<=0){setStatus('没有可播放的内容');return}
+let from=(fromT!=null)?fromT:playheadT;
+if(audio.loop.on&&(from<audio.loop.start-1e-6||from>=audio.loop.end))from=audio.loop.start;
+const to=audio.loop.on?audio.loop.end:total;
+if(from>=to-1e-6)from=audio.loop.on?audio.loop.start:0;
+const ac=ensureCtx();
+play.master=ac.createGain();play.master.gain.value=audio.muted?0:1;play.master.connect(ac.destination);
+play.from=from;play.to=to;play.loops=0;play.t0=ac.currentTime+0.08;play.on=true;
+scheduleInto(ac,play.master,from,to,play.t0,play.sources);
+$('#play').textContent='■ 停止预览';
+const tick=()=>{if(!play.on)return;
+let t=ac.currentTime-play.t0+play.from;
+if(t>=play.to){
+if(audio.loop.on){play.loops++;stopSources();play.from=audio.loop.start;play.t0=ac.currentTime+0.05;scheduleInto(ac,play.master,play.from,play.to,play.t0,play.sources);t=play.from}
+else{stopPlayback();setStatus('播放结束');return}}
+playheadT=Math.max(0,Math.min(t,play.to));
+const fi=Math.min(frames.length-1,Math.floor(playheadT*getFps()));
+if(fi!==current){current=fi;draw()}
+positionPlayhead(playheadT);
+play.raf=requestAnimationFrame(tick)};
+play.raf=requestAnimationFrame(tick)}
+function stopPlayback(){if(play.raf)cancelAnimationFrame(play.raf);play.raf=0;stopSources();
+if(play.master){try{play.master.disconnect()}catch(e){}play.master=null}
+play.on=false;const b=$('#play');if(b)b.textContent='▶ 播放动画'}
+$('#play').onclick=()=>{play.on?stopPlayback():startPlayback()};
+
+/* ================= 保存 / 恢复 ================= */
+function setStatus(m){$('#status').textContent=m}
+$('#save').onclick=()=>{const referenced=new Set(audio.tracks.flatMap(t=>t.clips.map(cl=>cl.fileId)));
+const files=[...referenced].map(id=>({id,name:(audioFiles[id]||{}).name||'音频',duration:(audioFiles[id]||{}).duration||0}));
+localStorage.pixelLoom=JSON.stringify({frames,fps:getFps(),audio,files,current});
+setStatus('已保存到本地 · '+new Date().toLocaleTimeString())};
+function loadProject(){if(!localStorage.pixelLoom)return;
+try{const d=JSON.parse(localStorage.pixelLoom);
+frames=d.frames||frames;$('#fps').value=d.fps||8;if(typeof d.current==='number')current=Math.min(d.current,frames.length-1);
+if(d.audio)audio=Object.assign({tracks:[],markers:[],loop:{on:false,start:0,end:1},snap:true,muted:false},d.audio);
+audio.tracks=(audio.tracks||[]).filter(t=>t&&Array.isArray(t.clips));
+if(Array.isArray(d.files))for(const m of d.files)audioFiles[m.id]={name:m.name,duration:m.duration,buffer:null,peaks:null,linked:false};
+if(d.files&&d.files.length)setStatus('音轨结构已恢复 · 请在音频面板重新关联原文件')}catch(e){}}
+
+/* ================= 导出 ================= */
+$('#export').onclick=()=>{let a=document.createElement('a');a.download='pixel-loom-frame.png';a.href=c.toDataURL('image/png');a.click();setStatus('已导出当前帧 PNG')};
+let exporting=false;
+async function exportWebm(){if(exporting)return;
+const btn=$('#exportWebm');
+const mimes=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
+const mime=(typeof MediaRecorder!=='undefined')?mimes.find(m=>MediaRecorder.isTypeSupported(m)):null;
+if(!mime){setStatus('浏览器不支持 WebM 音视频录制，已拒绝导出');return}
+const active=audio.tracks.flatMap(t=>t.clips).filter(cl=>!cl.muted&&cl.volume>0&&cl.duration>0);
+if(active.some(cl=>{const f=audioFiles[cl.fileId];return !f||!f.linked})){setStatus('存在未关联的音频片段，请先重新关联原文件 · 已拒绝导出');return}
+const audible=active.filter(cl=>audioFiles[cl.fileId]&&audioFiles[cl.fileId].linked);
+if(!audible.length){setStatus('没有可混音的音频，已拒绝导出无声文件');return}
+stopPlayback();exporting=true;btn.disabled=true;btn.textContent='⏳ 导出中…';
+try{
+const fps=getFps(),animDur=frames.length/fps;
+const audioEnd=audible.reduce((m,cl)=>Math.max(m,cl.start+cl.duration),0);
+const dur=Math.max(animDur,audioEnd,0.2);
+const ec=document.createElement('canvas');ec.width=ec.height=320;const ex=ec.getContext('2d');
+const ac=ensureCtx();
+const dest=ac.createMediaStreamDestination();
+const vs=ec.captureStream(fps);
+const stream=new MediaStream([...vs.getVideoTracks(),...dest.stream.getAudioTracks()]);
+const rec=new MediaRecorder(stream,{mimeType:mime});
+const chunks=[];rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+const stopped=new Promise(r=>rec.onstop=r);
+const sources=[];
+const drawIdx=i=>{ex.fillStyle='#202433';ex.fillRect(0,0,320,320);const s=20;frames[i].forEach((v,j)=>{if(v){ex.fillStyle=v;ex.fillRect(j%N*s,Math.floor(j/N)*s,s,s)}})};
+drawIdx(0);
+const t0=ac.currentTime+0.15;
+scheduleInto(ac,dest,0,dur,t0,sources);
+rec.start(250);
+setStatus('导出中 · 实时混音 '+dur.toFixed(2)+'s …');
+await new Promise(res=>{const tick=()=>{const t=ac.currentTime-t0;if(t>=dur){res();return}drawIdx(Math.min(frames.length-1,Math.max(0,Math.floor(t*fps))));requestAnimationFrame(tick)};requestAnimationFrame(tick)});
+sources.forEach(s=>{try{s.stop()}catch(e){}});
+rec.stop();await stopped;
+vs.getTracks().forEach(t=>t.stop());
+const blob=new Blob(chunks,{type:'video/webm'});
+window.__pl.lastExport=blob;
+const a=document.createElement('a');a.download='pixel-loom.webm';a.href=URL.createObjectURL(blob);a.click();
+setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+setStatus('已导出 WebM（含混音）· '+(blob.size/1024).toFixed(1)+' KB')}
+catch(err){setStatus('导出失败：'+err.message)}
+finally{exporting=false;btn.disabled=false;btn.textContent='⬇ 导出 WebM'}}
+$('#exportWebm').onclick=exportWebm;
+
+/* ================= 测试钩子 ================= */
+async function renderMixStats(from,to){const sr=44100,len=Math.max(1,Math.ceil((to-from)*sr));
+const oac=new OfflineAudioContext(1,len,sr);const sources=[];
+scheduleInto(oac,oac.destination,from,to,0,sources);
+const buf=await oac.startRendering();const d=buf.getChannelData(0);
+let s=0,p=0;for(let i=0;i<d.length;i++){const v=Math.abs(d[i]);s+=v*v;if(v>p)p=v}
+return{rms:Math.sqrt(s/d.length),peak:p,sources:sources.length}}
+window.__pl={audio:()=>audio,files:()=>audioFiles,
+state:()=>({tracks:audio.tracks.length,clips:audio.tracks.reduce((a,t)=>a+t.clips.length,0),markers:audio.markers.length,history:history.length}),
+sync:()=>({on:play.on,t:play.on&&actx?Math.max(0,actx.currentTime-play.t0+play.from):playheadT,frame:current,fps:getFps(),ctxT:actx?actx.currentTime:0}),
+loops:()=>play.loops,playhead:()=>playheadT,mixStats:renderMixStats,lastExport:null};
+
+/* ================= 启动 ================= */
+loadProject();
+$('#zoom').dispatchEvent(new Event('input'));
+draw();renderAudio();
 </script></body></html>
