@@ -23,6 +23,7 @@ let frames=[Array(N*N).fill('')],current=0,tool='pencil',color=colors[0],drawing
 const c=document.querySelector('#canvas'),ctx=c.getContext('2d'),oc=document.querySelector('#onion'),octx=oc.getContext('2d');
 const $=s=>document.querySelector(s);
 const getFps=()=>Math.min(24,Math.max(1,+$('#fps').value||8));
+const frameAt=t=>{const n=frames.length;return n?Math.floor(Math.max(0,t)*getFps())%n:0};
 function draw(){ctx.clearRect(0,0,320,320);ctx.fillStyle='#202433';ctx.fillRect(0,0,320,320);let s=20;frames[current].forEach((v,i)=>{if(v){ctx.fillStyle=v;ctx.fillRect(i%N*s,Math.floor(i/N)*s,s,s)}});octx.clearRect(0,0,320,320);if($('#onionToggle').checked&&current>0){frames[current-1].forEach((v,i)=>{if(v){octx.fillStyle=v;octx.fillRect(i%N*s,Math.floor(i/N)*s,s,s)}})}renderFrames()}
 function renderFrames(){let el=$('#frames');el.innerHTML='';frames.forEach((f,i)=>{let b=document.createElement('div');b.className='frame '+(i===current?'active':'');let x=document.createElement('canvas');x.width=x.height=N;let q=x.getContext('2d');q.fillStyle='#202433';q.fillRect(0,0,N,N);f.forEach((v,j)=>{if(v){q.fillStyle=v;q.fillRect(j%N,Math.floor(j/N),1,1)}});b.append(x);b.onclick=()=>{current=i;playheadT=i/getFps();positionPlayhead(playheadT);draw()};el.append(b)})}
 function setPixel(e){let r=c.getBoundingClientRect(),x=Math.floor((e.clientX-r.left)/r.width*N),y=Math.floor((e.clientY-r.top)/r.height*N),i=y*N+x;if(x<0||x>=N||y<0||y>=N)return;if(tool==='picker'){if(frames[current][i]){color=frames[current][i];$('#custom').value=color}return}if(!drawing)pushHistory();frames[current][i]=tool==='eraser'?'':color;draw()}
@@ -181,7 +182,7 @@ auRuler.addEventListener('pointerdown',e=>{if(e.target!==auTicks&&e.target!==auR
 const r=auRuler.getBoundingClientRect();if(e.clientY-r.top<=12)return;
 const x=e.clientX-auInner.getBoundingClientRect().left;
 const t=Math.max(0,snapTime(x/PXS));playheadT=t;
-if(play.on)startPlayback(t);else{current=Math.min(frames.length-1,Math.floor(t*getFps()));draw();positionPlayhead(t)}});
+if(play.on)startPlayback(t);else{current=frameAt(t);draw();positionPlayhead(t)}});
 auRuler.addEventListener('dblclick',e=>{if(e.target!==auTicks&&e.target!==auRuler)return;
 const x=e.clientX-auInner.getBoundingClientRect().left;
 stopPlayback();pushHistory();
@@ -313,7 +314,7 @@ if(t>=play.to){
 if(audio.loop.on){play.loops++;stopSources();play.from=audio.loop.start;play.t0=ac.currentTime+0.05;scheduleInto(ac,play.master,play.from,play.to,play.t0,play.sources);t=play.from}
 else{stopPlayback();setStatus('播放结束');return}}
 playheadT=Math.max(0,Math.min(t,play.to));
-const fi=Math.min(frames.length-1,Math.floor(playheadT*getFps()));
+const fi=frameAt(playheadT);
 if(fi!==current){current=fi;draw()}
 positionPlayhead(playheadT);
 play.raf=requestAnimationFrame(tick)};
