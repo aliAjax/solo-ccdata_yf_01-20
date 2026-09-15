@@ -370,12 +370,14 @@ const t0=ac.currentTime+0.15;
 scheduleInto(ac,dest,0,dur,t0,sources);
 rec.start(250);
 setStatus('导出中 · 实时混音 '+dur.toFixed(2)+'s …');
-await new Promise(res=>{const tick=()=>{const t=ac.currentTime-t0;if(t>=dur){res();return}drawIdx(Math.min(frames.length-1,Math.max(0,Math.floor(t*fps))));requestAnimationFrame(tick)};requestAnimationFrame(tick)});
+const drawnFrames=window.__pl.lastExportFrames=[];
+await new Promise(res=>{const tick=()=>{const t=ac.currentTime-t0;if(t>=dur){res();return}const idx=frameAt(t);drawnFrames.push(idx);drawIdx(idx);requestAnimationFrame(tick)};requestAnimationFrame(tick)});
 sources.forEach(s=>{try{s.stop()}catch(e){}});
 rec.stop();await stopped;
 vs.getTracks().forEach(t=>t.stop());
 const blob=new Blob(chunks,{type:'video/webm'});
 window.__pl.lastExport=blob;
+window.__pl.lastExportCanvas=ec;
 const a=document.createElement('a');a.download='pixel-loom.webm';a.href=URL.createObjectURL(blob);a.click();
 setTimeout(()=>URL.revokeObjectURL(a.href),4000);
 setStatus('已导出 WebM（含混音）· '+(blob.size/1024).toFixed(1)+' KB')}
